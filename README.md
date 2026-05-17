@@ -144,4 +144,5 @@ chmod 600 ~/.config/esp-ctl/devices.toml
 
 ## License
 
-GPL-3.0-or-later. See [`LICENSE`](LICENSE).
+Licensed under **GNU GPL v3.0 or later** (`GPL-3.0-or-later`, SPDX).
+See [`LICENSE`](LICENSE).
