@@ -23,10 +23,13 @@ Lines terminated with `\n` (server tolerates `\r\n` from the client). UTF-8.
 ### Server → Client (HELLO)
 
 ```
-espshell/1 HELLO fw=<version> chip=<model> mac=<aa:bb:cc:dd:ee:ff> nonce=<64-hex>
+espshell/1 HELLO nonce=<64-hex>
 ```
 
 - `nonce` is 32 cryptographically random bytes hex-encoded.
+- Device identity (`fw`, `chip`, `mac`) is intentionally omitted from the
+  cleartext HELLO to prevent passive enumeration. Use the `INFO` command
+  after authentication to retrieve this information.
 - Additional `<key>=<value>` pairs may appear in future versions; clients MUST
   ignore unknown keys.
 

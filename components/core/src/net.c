@@ -22,9 +22,6 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_netif.h"
-#include "esp_mac.h"
-#include "esp_app_desc.h"
-#include "esp_chip_info.h"
 
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
@@ -262,18 +259,8 @@ static bool do_handshake(int fd)
     char snonce_hex[ESPSHELL_AUTH_NONCE_LEN * 2 + 1];
     hex_encode(snonce, sizeof(snonce), snonce_hex);
 
-    uint8_t mac[6] = {0};
-    esp_read_mac(mac, ESP_MAC_WIFI_STA);
-
-    const esp_app_desc_t *desc = esp_app_get_description();
-
-    char hello[256];
-    snprintf(hello, sizeof(hello),
-             ESPSHELL_PROTO_VERSION
-             " HELLO fw=%s chip=%s mac=%02x:%02x:%02x:%02x:%02x:%02x nonce=%s",
-             desc ? desc->version : "?", ESPSHELL_TARGET_NAME,
-             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
-             snonce_hex);
+    char hello[128];
+    snprintf(hello, sizeof(hello), ESPSHELL_PROTO_VERSION " HELLO nonce=%s", snonce_hex);
     if (!send_line(fd, hello)) return false;
 
     /* 2. Receive AUTH cnonce=<hex> hmac=<hex>, with retry budget. */
