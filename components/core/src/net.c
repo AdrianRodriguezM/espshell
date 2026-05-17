@@ -5,6 +5,7 @@
 #include "cmd.h"
 #include "auth.h"
 #include "proto.h"
+#include "ota.h"
 #include "errors.h"
 
 #include <string.h>
@@ -389,6 +390,7 @@ out:
     s_authed = false;
     s_client_fd = -1;
     proto_session_wipe(&s_sess);
+    ota_abort();
     close(fd);
     LOG_I(TAG, "client disconnected");
 }
