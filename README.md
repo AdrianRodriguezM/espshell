@@ -5,8 +5,9 @@ capability surface of any ESP32-family chip to a Linux host over an encrypted
 TCP shell-style command protocol. Each downstream project builds on top of the
 core and only adds its own command handlers.
 
-> **Status:** All 5 phases scaffolded; Phases 1–4 implemented; Phase 5
-> (TLS, secure boot, encrypted NVS) is configuration-driven.
+> **Status:** Phases 1–4 implemented (WiFi, TCP, auth, AEAD, OTA, peripherals,
+> filesystem, power). Phase 5 (TLS / forward secrecy) is not yet implemented —
+> use on a trusted LAN or VPN.
 
 ## Supported targets
 
@@ -95,8 +96,8 @@ NimBLE integration in v2 (adds ~150 KB flash, needs partition rebalance).
 
 ## Async events (`EVT <type> <data>`)
 
-`HELLO`, `LOG`, `HEALTH`, `GPIO`, `ADC`, `UART`, `BLE`, `REBOOT`, `PANIC`,
-plus arbitrary `EVT PROJECT <data>` produced via `net_send_event()`.
+`LOG` · `HEALTH` · `GPIO` · `ADC` · `UART`,
+plus arbitrary `EVT PROJECT <data>` emitted by downstream code via `net_send_event()`.
 
 ## Project extension
 
