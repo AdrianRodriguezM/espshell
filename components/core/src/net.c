@@ -440,8 +440,10 @@ void net_init(void)
     s_wifi_evts = xEventGroupCreate();
     s_tx_mtx    = xSemaphoreCreateMutex();
     wifi_start();
-    /* session_loop() uses ~6KB+ of local buffers; keep margin to avoid
-     * stack corruption (symptoms: TCP connect succeeds but no HELLO / hangs). */
-    xTaskCreate(tcp_server_task,  "tcpsrv", 12288, NULL, 4, NULL);
+    /* session_loop() uses ~6KB of local buffers (frame/line/resp); plus the
+     * called command handler can be deep (esp_ota_write → flash driver, PSA
+     * crypto). 16KB gives ~10KB headroom for handlers, which is enough for
+     * OTA writes, hex codecs, and any reasonable user command. */
+    xTaskCreate(tcp_server_task,  "tcpsrv", 16384, NULL, 4, NULL);
     xTaskCreate(logger_pump_task, "logpump", 3072, NULL, 3, NULL);
 }
