@@ -366,8 +366,8 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
     /* OTA_BEGIN */
     char line[ESPSHELL_MAX_LINE], reply[8192];
     snprintf(line, sizeof(line), "OTA_BEGIN %ld %s", size, sha_hex);
-    if (!send_cmd(fd, s, line)) { free(buf); return 3; }
-    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
+    if (!send_cmd(fd, s, line)) { free(buf); fprintf(stderr, "send OTA_BEGIN failed\n"); return 3; }
+    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); fprintf(stderr, "recv OTA_BEGIN reply failed\n"); return 3; }
     if (strncmp(reply, "OK", 2) != 0) { free(buf); fprintf(stderr, "%s\n", reply); return 4; }
 
     /* Chunks: hex-encoded, fit into ESPSHELL_MAX_LINE minus the "OTA_DATA " prefix.
@@ -385,9 +385,9 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
             line[off++] = H[buf[sent+i] & 0xf];
         }
         line[off] = '\0';
-        if (!send_cmd(fd, s, line)) { free(buf); return 3; }
-        if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
-        if (strncmp(reply, "OK", 2) != 0) { free(buf); fprintf(stderr, "%s\n", reply); return 4; }
+        if (!send_cmd(fd, s, line)) { free(buf); fprintf(stderr, "send OTA_DATA failed at %zu\n", sent); return 3; }
+        if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); fprintf(stderr, "recv OTA_DATA reply failed at %zu\n", sent); return 3; }
+        if (strncmp(reply, "OK", 2) != 0) { free(buf); fprintf(stderr, "chunk %zu: %s\n", sent, reply); return 4; }
         sent += n;
         if ((sent % (32 * 1024)) < chunk) {
             fprintf(stderr, "\r  %zu / %ld bytes", sent, size); fflush(stderr);
@@ -396,8 +396,8 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
     fprintf(stderr, "\r  %zu / %ld bytes\n", sent, size);
     free(buf);
 
-    if (!send_cmd(fd, s, "OTA_END")) return 3;
-    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) return 3;
+    if (!send_cmd(fd, s, "OTA_END")) { fprintf(stderr, "send OTA_END failed\n"); return 3; }
+    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { fprintf(stderr, "recv OTA_END reply failed\n"); return 3; }
     return print_reply(reply);
 }
 
