@@ -152,6 +152,9 @@ static void wifi_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wc));
     ESP_ERROR_CHECK(esp_wifi_start());
+    /* Stability-first default: some ESP32 boards/IDF combos can panic in
+     * modem-sleep paths under socket traffic. Keep WiFi power-save off. */
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 }
 
 bool net_is_online(void) { return s_online; }
