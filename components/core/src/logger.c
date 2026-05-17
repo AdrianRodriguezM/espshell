@@ -58,6 +58,12 @@ void logger_log(log_level_t lvl, const char *tag, const char *fmt, ...)
     va_end(ap);
     if (n < 0) return;
 
+    /* Protocol invariant: one frame = one line, no embedded newlines.
+     * Replace \r and \n with spaces to protect the framing layer. */
+    for (char *p = m.line + hdr; *p; p++) {
+        if (*p == '\n' || *p == '\r') *p = ' ';
+    }
+
     /* Always mirror to UART for local debugging. */
     printf("%s\n", m.line);
 
