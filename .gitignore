@@ -1,0 +1,39 @@
+# ESP-IDF build artifacts
+build/
+build_*/
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+*.elf
+*.map
+*.bin
+
+# CLI build artifacts
+tools/esp-ctl/build/
+tools/esp-ctl/esp-ctl
+tools/esp-ctl/src/*.o
+*.o
+*.a
+
+# Editor / OS
+*.swp
+*.swo
+.vscode/
+.idea/
+.cache/
+compile_commands.json
+.DS_Store
+.codex/
+.agents/
+
+# Secrets
+*.token
+*_secret*
+secrets.local
+*.pem
+*.key
+
+# Local runtime/config
+*.log
+tmp/

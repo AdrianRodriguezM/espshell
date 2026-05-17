@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# espshell — common SDK defaults (any target). Per-target overrides live in
+# sdkconfig.defaults.<target>.
+
+# ---- Partitioning ----
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# ---- App layout ----
+CONFIG_APP_COMPILE_TIME_DATE=y
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# ---- FreeRTOS ----
+CONFIG_FREERTOS_HZ=1000
+CONFIG_FREERTOS_USE_TRACE_FACILITY=y
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS=y
+
+# ---- LWIP ----
+CONFIG_LWIP_SO_RCVBUF=y
+CONFIG_LWIP_TCP_KEEPALIVE=y
+
+# ---- mbedTLS (we use HMAC-SHA256, HKDF, ChaCha20-Poly1305) ----
+CONFIG_MBEDTLS_CHACHA20_C=y
+CONFIG_MBEDTLS_POLY1305_C=y
+CONFIG_MBEDTLS_CHACHAPOLY_C=y
+CONFIG_MBEDTLS_HKDF_C=y
+
+# ---- NVS encryption (recommended for production, opt-in) ----
+# CONFIG_NVS_ENCRYPTION=y  # enable together with secure-boot/flash-enc
+
+# ---- Logging defaults (we re-route via our logger) ----
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_COLORS=n
+
+# ---- Compiler ----
+CONFIG_COMPILER_WARN_WRITE_STRINGS=y
+CONFIG_COMPILER_STACK_CHECK_MODE_STRONG=y
+CONFIG_COMPILER_STACK_CHECK=y

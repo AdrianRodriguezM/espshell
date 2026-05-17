@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+menu "espshell core"
+
+    config ESPSHELL_TCP_PORT
+        int "TCP listening port"
+        default 9000
+        range 1 65535
+
+    config ESPSHELL_MAX_LINE
+        int "Max plaintext command line (bytes)"
+        default 1024
+        range 256 4096
+        help
+            Plaintext command lines (after AEAD decryption) cannot exceed this.
+
+    config ESPSHELL_MAX_RESP
+        int "Max response payload (bytes)"
+        default 4096
+        range 256 16384
+
+    config ESPSHELL_MAX_REGISTERED_CMDS
+        int "Maximum registered commands"
+        default 128
+        range 32 512
+
+    config ESPSHELL_AUTH_MAX_ATTEMPTS
+        int "Max failed auth attempts before drop"
+        default 3
+        range 1 10
+
+    config ESPSHELL_HEALTH_INTERVAL_MS
+        int "Health/stats broadcast interval (ms, 0 = disabled)"
+        default 10000
+        range 0 600000
+
+    config ESPSHELL_DEFAULT_DEVICE_NAME
+        string "Default device name (overridable via CFG_SET device_name)"
+        default "espshell"
+
+    config ESPSHELL_DEFAULT_WIFI_SSID
+        string "Default WiFi SSID (empty = require CFG_SET at first boot)"
+        default ""
+
+    config ESPSHELL_DEFAULT_WIFI_PASS
+        string "Default WiFi password"
+        default ""
+
+    config ESPSHELL_DEFAULT_AUTH_TOKEN
+        string "Default auth token (empty = generated random on first boot)"
+        default ""
+        help
+            If empty, a 32-byte random token is generated and stored in NVS on
+            first boot. Read it back over UART logs or via factory provisioning.
+
+    config ESPSHELL_ENABLE_MEM_CMDS
+        bool "Enable MEM_READ / MEM_WRITE commands (DANGEROUS)"
+        default n
+        help
+            These commands allow arbitrary memory access from any authenticated
+            client. Keep disabled unless you know what you are doing.
+
+    config ESPSHELL_ENABLE_OTA
+        bool "Enable OTA commands"
+        default y
+
+endmenu

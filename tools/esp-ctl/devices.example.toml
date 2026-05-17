@@ -1,0 +1,18 @@
+# ~/.config/esp-ctl/devices.toml — must be chmod 0600
+#
+# Reference with:   esp-ctl --device <name> <subcommand>
+
+[default]
+host  = "192.168.1.50"
+port  = 9000
+token = "PASTE-FIRST-BOOT-TOKEN-HERE"
+
+[sala]
+host  = "192.168.1.51"
+port  = 9000
+token = "another-token-hex"
+
+[lab]
+host  = "10.0.0.42"
+port  = 9000
+token = "lab-token"

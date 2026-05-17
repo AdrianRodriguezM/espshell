@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+idf_component_register(
+    SRCS
+        "src/core.c"
+        "src/cmd.c"
+        "src/cmd_builtin.c"
+        "src/net.c"
+        "src/proto.c"
+        "src/auth.c"
+        "src/cfg.c"
+        "src/logger.c"
+        "src/health.c"
+        "src/ota.c"
+        "src/fs.c"
+        "src/wifi_mgmt.c"
+        "src/time_svc.c"
+        "src/power.c"
+        "src/debug.c"
+        "src/ble.c"
+        "src/periph_gpio.c"
+        "src/periph_adc.c"
+        "src/periph_dac.c"
+        "src/periph_pwm.c"
+        "src/periph_i2c.c"
+        "src/periph_spi.c"
+        "src/periph_uart.c"
+    INCLUDE_DIRS "include"
+    PRIV_INCLUDE_DIRS "src"
+    REQUIRES
+        nvs_flash
+        esp_wifi
+        esp_event
+        esp_netif
+        lwip
+        mbedtls
+        app_update
+        esp_app_format
+        esp_timer
+        esp_pm
+        esp_adc
+        spiffs
+        esp_hw_support
+        vfs
+        esp_driver_gpio
+        esp_driver_dac
+        esp_driver_ledc
+        esp_driver_i2c
+        esp_driver_spi
+        esp_driver_uart
+        esp_driver_tsens
+)
