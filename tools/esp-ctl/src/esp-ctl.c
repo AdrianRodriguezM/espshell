@@ -268,11 +268,27 @@ static int print_reply(const char *reply)
     return 0;
 }
 
+/* Commands expect a terminal OK/ERR reply, but async EVT lines may arrive
+ * interleaved. Consume and print EVTs until we get a non-EVT line. */
+static int recv_cmd_reply(int fd, session_t *s, char *out, size_t out_cap)
+{
+    for (;;) {
+        int n = recv_reply(fd, s, out, out_cap);
+        if (n < 0) return n;
+        if (!strncmp(out, "EVT ", 4)) {
+            puts(out);
+            fflush(stdout);
+            continue;
+        }
+        return n;
+    }
+}
+
 static int do_one_shot(int fd, session_t *s, const char *cmd)
 {
     if (!send_cmd(fd, s, cmd)) { fprintf(stderr, "send failed\n"); return 3; }
     char reply[8192];
-    int n = recv_reply(fd, s, reply, sizeof(reply));
+    int n = recv_cmd_reply(fd, s, reply, sizeof(reply));
     if (n < 0) { fprintf(stderr, "recv/decrypt failed\n"); return 3; }
     return print_reply(reply);
 }
@@ -311,7 +327,7 @@ static int do_shell(int fd, session_t *s)
         if (!strcmp(line, "exit") || !strcmp(line, "quit")) return 0;
 
         if (!send_cmd(fd, s, line)) { fprintf(stderr, "send failed\n"); return 3; }
-        if (recv_reply(fd, s, reply, sizeof(reply)) < 0) { fprintf(stderr, "recv failed\n"); return 3; }
+        if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { fprintf(stderr, "recv failed\n"); return 3; }
         puts(reply);
     }
 }
