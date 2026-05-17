@@ -123,7 +123,7 @@ from `git clone` to running your own custom command over OTA.
 ## Build & flash
 
 ```sh
-git clone <repo> espshell && cd espshell
+git clone https://github.com/AdrianRodriguezM/espshell && cd espshell
 idf.py set-target esp32        # or esp32s3 / esp32c3 / esp32c6
 idf.py menuconfig              # espshell core → set WiFi creds + token (or leave blank to auto-generate)
 idf.py build flash monitor
