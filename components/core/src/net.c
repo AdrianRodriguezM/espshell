@@ -213,16 +213,21 @@ static bool write_full(int fd, const void *buf, size_t n)
 /* Send one frame, protected by mutex (multiple producers: cmd handler + logger). */
 static bool send_frame(const char *plaintext)
 {
-    if (s_client_fd < 0 || !s_authed) return false;
     size_t pt_len = strlen(plaintext);
     if (pt_len > CONFIG_ESPSHELL_MAX_LINE) return false;
 
     uint8_t buf[ESPSHELL_FRAME_HEADER_LEN + CONFIG_ESPSHELL_MAX_LINE + ESPSHELL_FRAME_TAG_LEN];
     size_t  fl;
+    bool ok = false;
+
     xSemaphoreTake(s_tx_mtx, portMAX_DELAY);
-    bool ok = proto_frame_encrypt(&s_sess, (const uint8_t *)plaintext, pt_len,
-                                  buf, sizeof(buf), &fl);
-    if (ok) ok = write_full(s_client_fd, buf, fl);
+    /* Re-check session state under the mutex: session_loop may have torn
+     * it down between the caller's pre-check and here. */
+    if (s_client_fd >= 0 && s_authed) {
+        ok = proto_frame_encrypt(&s_sess, (const uint8_t *)plaintext, pt_len,
+                                 buf, sizeof(buf), &fl);
+        if (ok) ok = write_full(s_client_fd, buf, fl);
+    }
     xSemaphoreGive(s_tx_mtx);
     return ok;
 }
