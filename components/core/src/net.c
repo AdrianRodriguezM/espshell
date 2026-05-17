@@ -460,6 +460,8 @@ void net_init(void)
     s_wifi_evts = xEventGroupCreate();
     s_tx_mtx    = xSemaphoreCreateMutex();
     wifi_start();
-    xTaskCreate(tcp_server_task,  "tcpsrv",  6144, NULL, 4, NULL);
+    /* session_loop() uses ~6KB+ of local buffers; keep margin to avoid
+     * stack corruption (symptoms: TCP connect succeeds but no HELLO / hangs). */
+    xTaskCreate(tcp_server_task,  "tcpsrv", 12288, NULL, 4, NULL);
     xTaskCreate(logger_pump_task, "logpump", 3072, NULL, 3, NULL);
 }
