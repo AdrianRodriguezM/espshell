@@ -37,3 +37,5 @@ secrets.local
 # Local runtime/config
 *.log
 tmp/
+tests/test_tokenizer
+tests/test_proto
