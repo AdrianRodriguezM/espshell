@@ -11,6 +11,7 @@
 #include "esp_sleep.h"
 #include "esp_pm.h"
 #include "esp_system.h"
+#include "esp_timer.h"
 
 static bool c_light(int c, char **v, char *r, size_t s)
 {
@@ -23,13 +24,24 @@ static bool c_light(int c, char **v, char *r, size_t s)
     return true;
 }
 
+static void do_deep_sleep(void *arg)
+{
+    esp_deep_sleep_start();
+}
+
 static bool c_deep(int c, char **v, char *r, size_t s)
 {
     if (c != 1) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
     uint64_t us = (uint64_t)strtoull(v[0], NULL, 10) * 1000ULL;
-    (void)r; (void)s;
     esp_sleep_enable_timer_wakeup(us);
-    esp_deep_sleep_start();
+    /* Defer so session_loop can flush the OK reply before the chip sleeps. */
+    static esp_timer_handle_t t;
+    if (!t) {
+        esp_timer_create_args_t a = { .callback = do_deep_sleep, .name = "deep-slp" };
+        esp_timer_create(&a, &t);
+    }
+    esp_timer_start_once(t, 50000); /* 50 ms — enough for one TCP round-trip */
+    snprintf(r, s, "sleeping");
     return true;
 }
 
