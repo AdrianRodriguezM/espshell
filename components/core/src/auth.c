@@ -47,7 +47,7 @@ void auth_init(void)
     if (cfg_get_str(KEY_TOKEN, buf, sizeof(buf)) && buf[0] != '\0') {
         s_token_len = strlen(buf);
         memcpy(s_token, buf, s_token_len);
-        LOG_I(TAG, "token loaded from NVS (%u bytes)", (unsigned)s_token_len);
+        LOG_I(TAG, "token loaded from NVS");
         return;
     }
 
