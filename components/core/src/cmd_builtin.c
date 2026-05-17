@@ -224,6 +224,11 @@ static bool c_cfg_get(int c, char **v, char *r, size_t s)
 static bool c_cfg_set(int c, char **v, char *r, size_t s)
 {
     if (!need_argc(c, 2, r, s)) return false;
+    if (strcmp(v[0], "auth_token") == 0 && strlen(v[1]) < 16) {
+        snprintf(r, s, "auth_token must be at least 16 characters");
+        cmd_set_err(ESPSHELL_E_BAD_ARGS);
+        return false;
+    }
     if (!cfg_set_str(v[0], v[1])) {
         snprintf(r, s, "write failed");
         cmd_set_err(ESPSHELL_E_INTERNAL);
