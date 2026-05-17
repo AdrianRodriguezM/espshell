@@ -33,14 +33,12 @@ static void snapshot(health_snapshot_t *o)
     o->largest_block = (uint32_t)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL);
 
     o->chip_temp_c = NAN;
+    o->cpu0_pct    = NAN;
+    o->cpu1_pct    = NAN;
 
     /* RSSI: filled from net layer if connected. */
     net_status_t ns;
     if (net_get_status(&ns)) o->rssi = ns.rssi;
-
-    /* CPU% requires FreeRTOS runtime stats; placeholder until we wire that up. */
-    o->cpu0_pct = 0.0f;
-    o->cpu1_pct = 0.0f;
 }
 
 void health_get(health_snapshot_t *out) { if (out) snapshot(out); }
@@ -57,12 +55,11 @@ static void health_task(void *arg)
         snapshot(&s);
         char buf[160];
         snprintf(buf, sizeof(buf),
-                 "EVT HEALTH uptime=%lu ram_free=%lu ram_min=%lu rssi=%d temp=%.1f",
+                 "EVT HEALTH uptime=%lu ram_free=%lu ram_min=%lu rssi=%d",
                  (unsigned long)s.uptime_s,
                  (unsigned long)s.ram_free,
                  (unsigned long)s.ram_min_free,
-                 (int)s.rssi,
-                 isnan(s.chip_temp_c) ? 0.0 : (double)s.chip_temp_c);
+                 (int)s.rssi);
         net_send_event(buf);
     }
 }

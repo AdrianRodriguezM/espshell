@@ -71,10 +71,8 @@ static bool c_stats(int c, char **v, char *r, size_t s)
     health_snapshot_t h;
     health_get(&h);
     snprintf(r, s,
-             "uptime=%" PRIu32 " ram_free=%" PRIu32 " ram_min=%" PRIu32
-             " rssi=%d temp=%.1f",
-             h.uptime_s, h.ram_free, h.ram_min_free, (int)h.rssi,
-             (double)h.chip_temp_c);
+             "uptime=%" PRIu32 " ram_free=%" PRIu32 " ram_min=%" PRIu32 " rssi=%d",
+             h.uptime_s, h.ram_free, h.ram_min_free, (int)h.rssi);
     return true;
 }
 
