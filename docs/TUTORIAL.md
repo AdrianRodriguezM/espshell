@@ -7,7 +7,7 @@ on the device over an encrypted shell.
 
 ## 0. Prerequisites
 
-- ESP-IDF v5.3+ or v6.x installed and sourced (`. $IDF_PATH/export.sh`)
+- ESP-IDF v6.0+ installed and sourced (`. $IDF_PATH/export.sh`)
 - An ESP32 family board (esp32 / esp32s3 / esp32c3 / esp32c6) on USB
 - A serial driver in the host kernel for your board's USB-to-UART bridge
   (cp210x for CP210x, ftdi_sio for FTDI, ch341 for cheap clones)

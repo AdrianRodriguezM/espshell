@@ -21,7 +21,7 @@ jobs:
       - name: Build ${{ matrix.target }}
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: v5.3.2
+          esp_idf_version: v6.0
           target: ${{ matrix.target }}
           command: idf.py build
 
