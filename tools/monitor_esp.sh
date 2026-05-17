@@ -23,22 +23,22 @@ pick_port() {
 
 if [[ -z "$PORT" ]]; then
   if ! PORT="$(pick_port)"; then
-    echo "No se encontró puerto serie (probado: /dev/ttyUSB0,/dev/ttyACM0,/dev/ttyUSB1,/dev/ttyACM1)." >&2
+    echo "No serial port found (tried: /dev/ttyUSB0, /dev/ttyACM0, /dev/ttyUSB1, /dev/ttyACM1)." >&2
     exit 1
   fi
 fi
 
 if [[ ! -c "$PORT" ]]; then
-  echo "Puerto inválido: $PORT" >&2
+  echo "Invalid port: $PORT" >&2
   exit 1
 fi
 
 if [[ ! "$BAUD" =~ ^[0-9]+$ ]]; then
-  echo "Baud inválido: $BAUD" >&2
+  echo "Invalid baud rate: $BAUD" >&2
   exit 1
 fi
 
-echo "Abriendo monitor en $PORT @ ${BAUD} (8N1, flow-control OFF). Ctrl+C para salir."
+echo "Opening monitor on $PORT @ ${BAUD} (8N1, flow-control OFF). Ctrl+C to exit."
 
 stty -F "$PORT" "$BAUD" cs8 -cstopb -parenb -ixon -ixoff -crtscts -echo -icrnl
 exec cat "$PORT"
