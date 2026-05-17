@@ -367,7 +367,7 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
     char line[ESPSHELL_MAX_LINE], reply[8192];
     snprintf(line, sizeof(line), "OTA_BEGIN %ld %s", size, sha_hex);
     if (!send_cmd(fd, s, line)) { free(buf); return 3; }
-    if (recv_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
+    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
     if (strncmp(reply, "OK", 2) != 0) { free(buf); fprintf(stderr, "%s\n", reply); return 4; }
 
     /* Chunks: hex-encoded, fit into ESPSHELL_MAX_LINE minus the "OTA_DATA " prefix.
@@ -386,7 +386,7 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
         }
         line[off] = '\0';
         if (!send_cmd(fd, s, line)) { free(buf); return 3; }
-        if (recv_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
+        if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) { free(buf); return 3; }
         if (strncmp(reply, "OK", 2) != 0) { free(buf); fprintf(stderr, "%s\n", reply); return 4; }
         sent += n;
         if ((sent % (32 * 1024)) < chunk) {
@@ -397,7 +397,7 @@ static int do_ota_upload(int fd, session_t *s, const char *path)
     free(buf);
 
     if (!send_cmd(fd, s, "OTA_END")) return 3;
-    if (recv_reply(fd, s, reply, sizeof(reply)) < 0) return 3;
+    if (recv_cmd_reply(fd, s, reply, sizeof(reply)) < 0) return 3;
     return print_reply(reply);
 }
 
