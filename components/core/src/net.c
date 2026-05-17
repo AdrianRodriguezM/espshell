@@ -6,6 +6,7 @@
 #include "auth.h"
 #include "proto.h"
 #include "ota.h"
+#include "hex.h"
 #include "errors.h"
 
 #include <string.h>
@@ -58,36 +59,6 @@ static int                 s_client_fd = -1;
 static SemaphoreHandle_t   s_tx_mtx;             /* serialise frame writes */
 static proto_session_t     s_sess;
 static volatile bool       s_authed;
-
-/* ------------------------------------------------------------------------- */
-/* Hex helpers                                                               */
-/* ------------------------------------------------------------------------- */
-static int hex_nibble(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
-}
-static bool hex_decode(const char *s, size_t expect, uint8_t *out)
-{
-    if (!s || strlen(s) != expect * 2) return false;
-    for (size_t i = 0; i < expect; i++) {
-        int hi = hex_nibble(s[i * 2]), lo = hex_nibble(s[i * 2 + 1]);
-        if (hi < 0 || lo < 0) return false;
-        out[i] = (uint8_t)((hi << 4) | lo);
-    }
-    return true;
-}
-static void hex_encode(const uint8_t *in, size_t n, char *out)
-{
-    static const char H[] = "0123456789abcdef";
-    for (size_t i = 0; i < n; i++) {
-        out[i * 2]     = H[in[i] >> 4];
-        out[i * 2 + 1] = H[in[i] & 0x0f];
-    }
-    out[n * 2] = '\0';
-}
 
 /* ------------------------------------------------------------------------- */
 /* WiFi event handling                                                       */

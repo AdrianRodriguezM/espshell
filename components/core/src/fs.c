@@ -3,6 +3,7 @@
  */
 #include "cmd.h"
 #include "errors.h"
+#include "hex.h"
 #include "logger.h"
 
 #include <stdio.h>
@@ -29,31 +30,6 @@ static void ensure_mount(void)
     };
     if (esp_vfs_spiffs_register(&cfg) == ESP_OK) s_mounted = true;
     else LOG_W(TAG, "spiffs mount failed");
-}
-
-static int hex_nibble(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
-}
-static int hex_to_bytes(const char *str, uint8_t *out, size_t cap)
-{
-    size_t n = strlen(str);
-    if (n % 2 || n / 2 > cap) return -1;
-    for (size_t i = 0; i < n / 2; i++) {
-        int hi = hex_nibble(str[i*2]), lo = hex_nibble(str[i*2+1]);
-        if (hi < 0 || lo < 0) return -1;
-        out[i] = (uint8_t)((hi << 4) | lo);
-    }
-    return (int)(n / 2);
-}
-static void bytes_to_hex(const uint8_t *b, size_t n, char *out)
-{
-    static const char H[] = "0123456789abcdef";
-    for (size_t i = 0; i < n; i++) { out[i*2] = H[b[i] >> 4]; out[i*2+1] = H[b[i] & 0xf]; }
-    out[n*2] = '\0';
 }
 
 static void join_path(char *out, size_t cap, const char *user)
@@ -107,7 +83,7 @@ static bool c_read(int c, char **v, char *r, size_t s)
     size_t n = fread(buf, 1, sizeof(buf), f);
     fclose(f);
     if (n * 2 + 1 > s) { cmd_set_err(ESPSHELL_E_NO_MEM); snprintf(r, s, "too big"); return false; }
-    bytes_to_hex(buf, n, r);
+    hex_encode(buf, n, r);
     return true;
 }
 

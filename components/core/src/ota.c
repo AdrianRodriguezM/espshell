@@ -15,6 +15,7 @@
 #include "cmd.h"
 #include "errors.h"
 #include "logger.h"
+#include "hex.h"
 #include "sdkconfig.h"
 
 #include <stdio.h>
@@ -47,27 +48,6 @@ typedef struct {
     psa_hash_operation_t       sha;
 } ota_state_t;
 static ota_state_t s;
-
-static int hex_nibble(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
-}
-static int hex_to_bytes(const char *str, uint8_t *out, size_t cap)
-{
-    size_t n = strlen(str);
-    if (n % 2) return -1;
-    size_t need = n / 2;
-    if (need > cap) return -1;
-    for (size_t i = 0; i < need; i++) {
-        int hi = hex_nibble(str[i*2]), lo = hex_nibble(str[i*2+1]);
-        if (hi < 0 || lo < 0) return -1;
-        out[i] = (uint8_t)((hi << 4) | lo);
-    }
-    return (int)need;
-}
 
 static void abort_locked(void)
 {

@@ -3,6 +3,7 @@
  */
 #include "cmd.h"
 #include "errors.h"
+#include "hex.h"
 #include "targets.h"
 
 #include <math.h>
@@ -65,14 +66,6 @@ static bool c_mem_read(int c, char **v, char *r, size_t s)
     }
     r[n*2] = '\0';
     return true;
-}
-
-static int hex_nibble(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
 }
 
 static bool c_mem_write(int c, char **v, char *r, size_t s)

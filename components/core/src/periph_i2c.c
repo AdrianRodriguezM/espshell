@@ -3,6 +3,7 @@
  */
 #include "cmd.h"
 #include "errors.h"
+#include "hex.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,33 +15,6 @@
 #define MAX_BYTES 64
 
 static i2c_master_bus_handle_t s_bus[MAX_PORT];
-
-static int hex_nibble(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
-}
-static int hex_to_bytes(const char *s, uint8_t *out, size_t cap)
-{
-    size_t n = strlen(s);
-    if (n % 2) return -1;
-    size_t need = n / 2;
-    if (need > cap) return -1;
-    for (size_t i = 0; i < need; i++) {
-        int hi = hex_nibble(s[i*2]), lo = hex_nibble(s[i*2+1]);
-        if (hi < 0 || lo < 0) return -1;
-        out[i] = (uint8_t)((hi << 4) | lo);
-    }
-    return (int)need;
-}
-static void bytes_to_hex(const uint8_t *b, size_t n, char *out)
-{
-    static const char H[] = "0123456789abcdef";
-    for (size_t i = 0; i < n; i++) { out[i*2] = H[b[i] >> 4]; out[i*2+1] = H[b[i] & 0xf]; }
-    out[n*2] = '\0';
-}
 
 static bool c_init(int c, char **v, char *r, size_t s)
 {
@@ -110,7 +84,7 @@ static bool c_read(int c, char **v, char *r, size_t s)
     if (err != ESP_OK) { cmd_set_err(ESPSHELL_E_HW_FAIL); snprintf(r, s, "xfer"); return false; }
 
     if ((size_t)(n * 2 + 1) > s) { cmd_set_err(ESPSHELL_E_NO_MEM); return false; }
-    bytes_to_hex(rx, n, r);
+    hex_encode(rx, n, r);
     return true;
 }
 

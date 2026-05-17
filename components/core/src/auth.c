@@ -3,6 +3,7 @@
 #include "proto.h"
 #include "cfg.h"
 #include "logger.h"
+#include "hex.h"
 
 #include <string.h>
 
@@ -20,16 +21,6 @@ static void wipe(volatile void *p, size_t n)
 {
     volatile uint8_t *b = (volatile uint8_t *)p;
     while (n--) *b++ = 0;
-}
-
-static void hexify(const uint8_t *in, size_t n, char *out)
-{
-    static const char H[] = "0123456789abcdef";
-    for (size_t i = 0; i < n; i++) {
-        out[i * 2]     = H[in[i] >> 4];
-        out[i * 2 + 1] = H[in[i] & 0x0f];
-    }
-    out[n * 2] = '\0';
 }
 
 void auth_init(void)
@@ -63,7 +54,7 @@ void auth_init(void)
     uint8_t raw[32];
     esp_fill_random(raw, sizeof(raw));
     char hex[sizeof(raw) * 2 + 1];
-    hexify(raw, sizeof(raw), hex);
+    hex_encode(raw, sizeof(raw), hex);
     s_token_len = strlen(hex);
     memcpy(s_token, hex, s_token_len);
     cfg_set_str(KEY_TOKEN, hex);
