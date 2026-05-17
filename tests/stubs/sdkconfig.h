@@ -1,0 +1,4 @@
+#pragma once
+#define CONFIG_ESPSHELL_MAX_REGISTERED_CMDS 128
+#define CONFIG_ESPSHELL_MAX_RESP            4096
+#define CONFIG_ESPSHELL_MAX_LINE            1024

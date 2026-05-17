@@ -1,5 +1,7 @@
 # espshell
 
+[![CI](https://github.com/AdrianRodriguezM/espshell/actions/workflows/build.yml/badge.svg)](https://github.com/AdrianRodriguezM/espshell/actions/workflows/build.yml)
+
 A reusable application-layer firmware on top of ESP-IDF that exposes the full
 capability surface of any ESP32-family chip to a Linux host over an encrypted
 TCP shell-style command protocol. Each downstream project builds on top of the
