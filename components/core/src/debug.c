@@ -67,6 +67,14 @@ static bool c_mem_read(int c, char **v, char *r, size_t s)
     return true;
 }
 
+static int hex_nibble(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
 static bool c_mem_write(int c, char **v, char *r, size_t s)
 {
     if (c != 2) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
@@ -77,11 +85,10 @@ static bool c_mem_write(int c, char **v, char *r, size_t s)
     if (n > 256) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
     uint8_t *p = (uint8_t *)addr;
     for (size_t i = 0; i < n; i++) {
-        int hi = v[1][i*2], lo = v[1][i*2+1];
-        int hv = (hi <= '9') ? hi - '0' : (hi & 0x4F) - 'A' + 10;
-        int lv = (lo <= '9') ? lo - '0' : (lo & 0x4F) - 'A' + 10;
-        if (hv < 0 || lv < 0 || hv > 15 || lv > 15) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
-        p[i] = (uint8_t)((hv << 4) | lv);
+        int hi = hex_nibble(v[1][i * 2]);
+        int lo = hex_nibble(v[1][i * 2 + 1]);
+        if (hi < 0 || lo < 0) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
+        p[i] = (uint8_t)((hi << 4) | lo);
     }
     snprintf(r, s, "%u", (unsigned)n);
     return true;
