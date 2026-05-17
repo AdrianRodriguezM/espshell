@@ -23,6 +23,7 @@
 #  define ESPSHELL_HAS_ETHERNET      1
 #  define ESPSHELL_HAS_THREAD        0
 #  define ESPSHELL_CHIP_TEMP_OK      0   /* internal temp sensor unreliable on classic */
+#  define ESPSHELL_SPI_NUM_HOSTS     2   /* SPI2_HOST + SPI3_HOST */
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #  define ESPSHELL_TARGET_NAME       "esp32s3"
 #  define ESPSHELL_HAS_DUAL_CORE     1
@@ -35,6 +36,7 @@
 #  define ESPSHELL_HAS_ETHERNET      0
 #  define ESPSHELL_HAS_THREAD        0
 #  define ESPSHELL_CHIP_TEMP_OK      1
+#  define ESPSHELL_SPI_NUM_HOSTS     2   /* SPI2_HOST + SPI3_HOST */
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #  define ESPSHELL_TARGET_NAME       "esp32c3"
 #  define ESPSHELL_HAS_DUAL_CORE     0
@@ -47,6 +49,7 @@
 #  define ESPSHELL_HAS_ETHERNET      0
 #  define ESPSHELL_HAS_THREAD        0
 #  define ESPSHELL_CHIP_TEMP_OK      1
+#  define ESPSHELL_SPI_NUM_HOSTS     1   /* SPI2_HOST only */
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #  define ESPSHELL_TARGET_NAME       "esp32c6"
 #  define ESPSHELL_HAS_DUAL_CORE     0
@@ -59,6 +62,7 @@
 #  define ESPSHELL_HAS_ETHERNET      0
 #  define ESPSHELL_HAS_THREAD        1
 #  define ESPSHELL_CHIP_TEMP_OK      1
+#  define ESPSHELL_SPI_NUM_HOSTS     1   /* SPI2_HOST only */
 #else
 #  error "Unsupported IDF target. Add it to components/core/include/targets.h."
 #endif

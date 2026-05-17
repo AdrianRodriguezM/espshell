@@ -4,6 +4,7 @@
 #include "cmd.h"
 #include "errors.h"
 #include "hex.h"
+#include "targets.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +13,14 @@
 #include "driver/spi_master.h"
 
 #define MAX_BYTES 64
-#define MAX_HOST  2
+#define MAX_HOST  ESPSHELL_SPI_NUM_HOSTS
+
+/* Ordered list of usable SPI hosts for this target. */
+#if ESPSHELL_SPI_NUM_HOSTS >= 2
+static const spi_host_device_t s_host_map[MAX_HOST] = { SPI2_HOST, SPI3_HOST };
+#else
+static const spi_host_device_t s_host_map[MAX_HOST] = { SPI2_HOST };
+#endif
 
 static spi_device_handle_t s_dev[MAX_HOST];
 static bool                s_bus_inited[MAX_HOST];
@@ -28,7 +36,7 @@ static bool c_init(int c, char **v, char *r, size_t s)
         cmd_set_err(ESPSHELL_E_BAD_ARGS); snprintf(r, s, "args"); return false;
     }
 
-    spi_host_device_t hd = (host == 0) ? SPI2_HOST : SPI3_HOST;
+    spi_host_device_t hd = s_host_map[host];
 
     if (!s_bus_inited[host]) {
         spi_bus_config_t bc = {
