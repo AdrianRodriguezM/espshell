@@ -113,7 +113,7 @@ int cmd_dispatch(char *line, char *out, size_t out_sz)
     for (size_t i = 0; i < s_n; i++) {
         if (strcmp(s_tbl[i].name, name) != 0) continue;
 
-        char payload[1024];
+        char payload[CONFIG_ESPSHELL_MAX_RESP];
         payload[0] = '\0';
         cmd_clear_err();
 
