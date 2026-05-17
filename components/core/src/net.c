@@ -391,11 +391,19 @@ out:
 static void tcp_server_task(void *arg)
 {
     (void)arg;
-    /* Wait for IP before listening. */
+    uint32_t backoff_ms = 1000;
+
+restart:
+    /* Wait for IP before (re)opening the listening socket. */
     xEventGroupWaitBits(s_wifi_evts, WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
 
     int lsock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (lsock < 0) { LOG_E(TAG, "socket() failed"); vTaskDelete(NULL); return; }
+    if (lsock < 0) {
+        LOG_E(TAG, "socket() failed errno=%d; retry in %"PRIu32"ms", errno, backoff_ms);
+        vTaskDelay(pdMS_TO_TICKS(backoff_ms));
+        backoff_ms = (backoff_ms < 30000) ? backoff_ms * 2 : 30000;
+        goto restart;
+    }
 
     int yes = 1;
     setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
@@ -406,13 +414,20 @@ static void tcp_server_task(void *arg)
         .sin_port        = htons(CONFIG_ESPSHELL_TCP_PORT),
     };
     if (bind(lsock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        LOG_E(TAG, "bind() failed errno=%d", errno);
-        close(lsock); vTaskDelete(NULL); return;
+        LOG_E(TAG, "bind() failed errno=%d; retry in %"PRIu32"ms", errno, backoff_ms);
+        close(lsock);
+        vTaskDelay(pdMS_TO_TICKS(backoff_ms));
+        backoff_ms = (backoff_ms < 30000) ? backoff_ms * 2 : 30000;
+        goto restart;
     }
     if (listen(lsock, 1) < 0) {
-        LOG_E(TAG, "listen() failed errno=%d", errno);
-        close(lsock); vTaskDelete(NULL); return;
+        LOG_E(TAG, "listen() failed errno=%d; retry in %"PRIu32"ms", errno, backoff_ms);
+        close(lsock);
+        vTaskDelay(pdMS_TO_TICKS(backoff_ms));
+        backoff_ms = (backoff_ms < 30000) ? backoff_ms * 2 : 30000;
+        goto restart;
     }
+    backoff_ms = 1000;
     LOG_I(TAG, "listening on tcp/%d", CONFIG_ESPSHELL_TCP_PORT);
 
     for (;;) {
