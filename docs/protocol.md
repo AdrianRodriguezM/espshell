@@ -20,6 +20,9 @@ The token never crosses the wire.
 
 Lines terminated with `\n` (server tolerates `\r\n` from the client). UTF-8.
 
+The server applies a receive timeout (~10 s) for the whole cleartext phase;
+clients that connect and stall are dropped.
+
 ### Server → Client (HELLO)
 
 ```
