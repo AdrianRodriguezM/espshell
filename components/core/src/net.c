@@ -44,6 +44,10 @@
 #define CONFIG_ESPSHELL_AUTH_MAX_ATTEMPTS 3
 #endif
 
+/* Cleartext-phase receive timeout; after auth the socket goes back to
+ * blocking reads with TCP keepalive. */
+#define ESPSHELL_HANDSHAKE_TIMEOUT_S 10
+
 #define WIFI_CONNECTED_BIT BIT0
 
 static EventGroupHandle_t s_wifi_evts;
@@ -313,11 +317,18 @@ static void session_loop(int fd)
     s_client_fd = fd;
     s_authed    = false;
 
-    /* 1. Cleartext handshake. */
+    /* 1. Cleartext handshake, under a receive timeout: with the single-client
+     * policy an idle connect would otherwise hold the device hostage —
+     * keepalive only covers dead peers, not silent ones. */
+    struct timeval hs_tv = { .tv_sec = ESPSHELL_HANDSHAKE_TIMEOUT_S };
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &hs_tv, sizeof(hs_tv));
     if (!do_handshake(fd)) {
         LOG_W(TAG, "handshake failed; dropping");
         goto out;
     }
+    /* Session established: back to blocking reads (keepalive takes over). */
+    hs_tv.tv_sec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &hs_tv, sizeof(hs_tv));
     s_authed = true;
     LOG_I(TAG, "client authenticated");
 
