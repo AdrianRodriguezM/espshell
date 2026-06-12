@@ -261,22 +261,23 @@ static bool send_line(int fd, const char *line)
 /* ------------------------------------------------------------------------- */
 static bool do_handshake(int fd)
 {
-    /* 1. Send HELLO with server nonce. */
     uint8_t snonce[ESPSHELL_AUTH_NONCE_LEN];
-    auth_make_nonce(snonce);
-    char snonce_hex[ESPSHELL_AUTH_NONCE_LEN * 2 + 1];
-    hex_encode(snonce, sizeof(snonce), snonce_hex);
-
-    char hello[128];
-    snprintf(hello, sizeof(hello), ESPSHELL_PROTO_VERSION " HELLO nonce=%s", snonce_hex);
-    if (!send_line(fd, hello)) return false;
-
-    /* 2. Receive AUTH cnonce=<hex> hmac=<hex>, with retry budget. */
-    char line[512];
+    char    snonce_hex[ESPSHELL_AUTH_NONCE_LEN * 2 + 1];
+    char    hello[128];
+    char    line[512];
     uint8_t cnonce[ESPSHELL_AUTH_NONCE_LEN];
     uint8_t chmac[ESPSHELL_AUTH_HMAC_LEN];
 
     for (int attempt = 0; attempt < CONFIG_ESPSHELL_AUTH_MAX_ATTEMPTS; attempt++) {
+        /* 1. Send HELLO with a fresh server nonce. Regenerated per attempt so
+         * each challenge is independent: a failed guess buys no second try
+         * against the same nonce. */
+        auth_make_nonce(snonce);
+        hex_encode(snonce, sizeof(snonce), snonce_hex);
+        snprintf(hello, sizeof(hello), ESPSHELL_PROTO_VERSION " HELLO nonce=%s", snonce_hex);
+        if (!send_line(fd, hello)) return false;
+
+        /* 2. Receive AUTH cnonce=<hex> hmac=<hex>. */
         if (recv_line(fd, line, sizeof(line)) < 0) return false;
 
         char *cnonce_hex = NULL, *hmac_hex = NULL;

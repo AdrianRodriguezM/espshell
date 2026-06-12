@@ -46,8 +46,10 @@ AUTH cnonce=<64-hex> hmac=<64-hex>
 ### Server → Client (auth result)
 
 - On success: `OK session established`
-- On failure: `ERR 3 invalid auth` — the client may retry up to 3 times before
-  the server enforces a 10-second cool-down and drops the socket.
+- On failure: `ERR 3 invalid auth`, followed by a **fresh HELLO with a new
+  nonce**. The client may retry (up to 3 attempts total) but MUST answer the
+  newest nonce — server nonces are single-use. After the last failure the
+  server enforces a 10-second cool-down and drops the socket.
 
 ### Session key derivation
 
