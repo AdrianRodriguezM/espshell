@@ -129,10 +129,21 @@ static bool c_reboot(int c, char **v, char *r, size_t s)
 
 static bool c_factory_reset(int c, char **v, char *r, size_t s)
 {
-    (void)c; (void)v; (void)r; (void)s;
-    /* Real impl: erase NVS partition + restart. */
+    (void)c; (void)v;
     nvs_flash_erase();   /* declared in nvs_flash.h, included transitively via cfg.h chain */
-    esp_restart();
+    /* NVS is gone, so the auth token is too: the device comes back
+     * unprovisioned and prints a fresh token over UART on next boot. */
+    snprintf(r, s, "nvs erased, rebooting; reconfigure via UART console");
+    /* Defer the restart so this reply can flush (same pattern as REBOOT). */
+    static esp_timer_handle_t t;
+    if (!t) {
+        esp_timer_create_args_t a = {
+            .callback = (esp_timer_cb_t)esp_restart,
+            .name = "factory-rst",
+        };
+        esp_timer_create(&a, &t);
+    }
+    esp_timer_start_once(t, 200000);
     return true;
 }
 
