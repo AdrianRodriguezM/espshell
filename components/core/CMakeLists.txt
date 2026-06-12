@@ -6,6 +6,7 @@ idf_component_register(
         "src/cmd.c"
         "src/cmd_builtin.c"
         "src/net.c"
+        "src/mdns_svc.c"
         "src/proto.c"
         "src/auth.c"
         "src/cfg.c"

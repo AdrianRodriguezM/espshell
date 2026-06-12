@@ -37,6 +37,15 @@ menu "espshell core"
         string "Default device name (overridable via CFG_SET device_name)"
         default "espshell"
 
+    config ESPSHELL_ENABLE_MDNS
+        bool "Advertise the shell via mDNS (_espshell._tcp)"
+        default y
+        help
+            Announce <device_name>.local plus an _espshell._tcp service with
+            TXT records proto/chip/fw, so `esp-ctl discover` finds the device
+            without a fixed IP. Costs ~10 KB of flash; disable on tight
+            targets or hostile networks.
+
     config ESPSHELL_DEFAULT_WIFI_SSID
         string "Default WiFi SSID (empty = require CFG_SET at first boot)"
         default ""

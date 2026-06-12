@@ -23,6 +23,7 @@ void time_module_init(void);
 void power_module_init(void);
 void debug_module_init(void);
 void ble_module_init(void);
+void mdns_svc_init(void);
 
 static bool s_inited;
 
@@ -55,5 +56,6 @@ void core_init(void)
     ota_init();
 
     net_init();      /* spawns tcp server + log pump after wifi assoc */
+    mdns_svc_init(); /* after net_init: needs the default event loop */
     health_init();   /* spawns periodic stats emitter */
 }

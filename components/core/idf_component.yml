@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Managed-component manifest (ESP-IDF Component Manager).
+dependencies:
+  idf: ">=5.0"
+  espressif/mdns: "^1.4"
