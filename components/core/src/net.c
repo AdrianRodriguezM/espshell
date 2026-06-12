@@ -187,9 +187,13 @@ static bool write_full(int fd, const void *buf, size_t n)
 static bool send_frame(const char *plaintext)
 {
     size_t pt_len = strlen(plaintext);
-    if (pt_len > CONFIG_ESPSHELL_MAX_LINE) return false;
+    /* Outbound frames carry responses/events, capped by MAX_RESP — not by
+     * MAX_LINE, which bounds inbound command lines only (see protocol.md). */
+    if (pt_len > CONFIG_ESPSHELL_MAX_RESP) return false;
 
-    uint8_t buf[ESPSHELL_FRAME_HEADER_LEN + CONFIG_ESPSHELL_MAX_LINE + ESPSHELL_FRAME_TAG_LEN];
+    /* Static, not stack: MAX_RESP-sized, and one caller is the 3KB logger
+     * pump task. Safe because all use is under s_tx_mtx. */
+    static uint8_t buf[ESPSHELL_FRAME_HEADER_LEN + CONFIG_ESPSHELL_MAX_RESP + ESPSHELL_FRAME_TAG_LEN];
     size_t  fl;
     bool ok = false;
 

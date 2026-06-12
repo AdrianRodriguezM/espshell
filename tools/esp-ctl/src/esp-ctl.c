@@ -130,7 +130,7 @@ static bool send_cmd(int fd, session_t *s, const char *cmd)
 
 static int recv_reply(int fd, session_t *s, char *out, size_t out_cap)
 {
-    uint8_t frame[ESPSHELL_FRAME_HEADER_LEN + ESPSHELL_MAX_LINE + ESPSHELL_FRAME_TAG_LEN];
+    uint8_t frame[ESPSHELL_FRAME_HEADER_LEN + ESPSHELL_MAX_RESP + ESPSHELL_FRAME_TAG_LEN];
     if (read_full(fd, frame, 2) <= 0) return -1;
     uint16_t fl = ((uint16_t)frame[0] << 8) | frame[1];
     if (fl < ESPSHELL_FRAME_HEADER_LEN + ESPSHELL_FRAME_TAG_LEN || fl > sizeof(frame))

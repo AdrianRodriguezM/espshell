@@ -21,7 +21,8 @@
  *  │               dir_byte = 0x00 from server, 0x01 from client              │
  *  │    AAD      = first 12 bytes of header (length || type || flags || seq)  │
  *  │    cipher   = ChaCha20-Poly1305(key, nonce, AAD, plaintext)              │
- *  │    plaintext = one ASCII command line, NO trailing newline               │
+ *  │    plaintext = one ASCII line, NO trailing newline; asymmetric caps:     │
+ *  │                C→S commands ≤ MAX_LINE, S→C replies ≤ MAX_RESP           │
  *  │                                                                          │
  *  │  Replay: receiver MUST drop frames whose seq != expected_next.           │
  *  │                                                                          │

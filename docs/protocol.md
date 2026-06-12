@@ -90,8 +90,11 @@ Big-endian, packed. No padding.
 - **Nonce** (12 bytes): `dir_byte (1) || seq_be (8) || 0x00 0x00 0x00`
   where `dir_byte = 0x00` for frames sent by the server and `0x01` for frames
   sent by the client.
-- **Plaintext**: one ASCII command line WITHOUT a trailing newline,
-  ≤ 1024 bytes.
+- **Plaintext**: one ASCII line WITHOUT a trailing newline. Size limits are
+  **asymmetric**: client → server (command lines) ≤ 1024 bytes
+  (`ESPSHELL_MAX_LINE`); server → client (replies and events) ≤ 4096 bytes
+  (`ESPSHELL_MAX_RESP`). Receivers MUST size their frame buffers for the
+  limit of the direction they read.
 
 ### Receiver rules
 

@@ -20,7 +20,10 @@
 #define ESPSHELL_FRAME_TYPE_DATA    1
 #define ESPSHELL_DIR_SERVER         0x00
 #define ESPSHELL_DIR_CLIENT         0x01
+/* Payload limits are asymmetric: command lines (client → server) are capped
+ * at MAX_LINE; replies and events (server → client) at MAX_RESP. */
 #define ESPSHELL_MAX_LINE           1024
+#define ESPSHELL_MAX_RESP           4096
 
 typedef struct {
     uint8_t  key[ESPSHELL_SESSION_KEY_LEN];

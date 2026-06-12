@@ -213,6 +213,31 @@ static void test_client_to_server(void)
     CHECK("client→server: plaintext matches", strcmp((char *)out, pt) == 0);
 }
 
+static void test_large_response(void)
+{
+    /* Server → client payloads may reach ESPSHELL_MAX_RESP, beyond the
+     * MAX_LINE command cap — a 2048-byte reply must survive the roundtrip
+     * (regression: send_frame used to reject anything over MAX_LINE). */
+    session_t srv, cli;
+    server_session(&srv);
+    client_session(&cli);
+
+    uint8_t pt[2048];
+    for (size_t i = 0; i < sizeof(pt); i++) pt[i] = (uint8_t)('a' + i % 26);
+
+    uint8_t frame[ESPSHELL_FRAME_HEADER_LEN + ESPSHELL_MAX_RESP + ESPSHELL_FRAME_TAG_LEN];
+    size_t fl;
+    bool ok = frame_encrypt(&srv, pt, sizeof(pt), frame, sizeof(frame), &fl);
+    CHECK("2048B response: encrypt ok", ok);
+
+    uint8_t out[ESPSHELL_MAX_RESP];
+    size_t pt_len;
+    ok = frame_decrypt(&cli, frame, fl, out, sizeof(out), &pt_len);
+    CHECK("2048B response: decrypt ok", ok);
+    CHECK("2048B response: length matches", pt_len == sizeof(pt));
+    CHECK("2048B response: payload matches", memcmp(out, pt, sizeof(pt)) == 0);
+}
+
 /* ----------------------------------------------------------------------- */
 
 int main(void)
@@ -227,6 +252,7 @@ int main(void)
     test_empty_plaintext();
     test_session_wipe();
     test_client_to_server();
+    test_large_response();
     printf("--- %d passed, %d failed ---\n", g_pass, g_fail);
     return g_fail ? 1 : 0;
 }
