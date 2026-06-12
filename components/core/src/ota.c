@@ -105,8 +105,16 @@ bool ota_end(void)
         abort_locked();
         return false;
     }
-    if (esp_ota_end(s.h) != ESP_OK) { abort_locked(); return false; }
-    if (esp_ota_set_boot_partition(s.part) != ESP_OK) return false;
+    /* esp_ota_end() frees the handle whether it succeeds or not; clear it
+     * first so no later abort path calls esp_ota_abort() on a stale handle. */
+    esp_err_t end_err = esp_ota_end(s.h);
+    s.h = 0;
+    if (end_err != ESP_OK) { abort_locked(); return false; }
+    if (esp_ota_set_boot_partition(s.part) != ESP_OK) {
+        LOG_E(TAG, "set_boot_partition failed");
+        memset(&s, 0, sizeof(s));
+        return false;
+    }
     memset(&s, 0, sizeof(s));
     LOG_I(TAG, "ota committed; rebooting");
     /* Caller is expected to reboot from the command handler. */
