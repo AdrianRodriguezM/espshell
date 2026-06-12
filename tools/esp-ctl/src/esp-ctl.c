@@ -417,6 +417,7 @@ static void usage(void)
 "  shell                   interactive REPL\n"
 "  logs                    enable LOG_STREAM and follow EVTs (Ctrl-C to stop)\n"
 "  ota upload <file>       chunked firmware upload (SHA-256 verified)\n"
+"  discover                find espshell devices via mDNS (no host/token)\n"
         , stderr);
 }
 
@@ -448,6 +449,12 @@ int main(int argc, char **argv)
         case 'h': usage(); return 0;
         default:  usage(); return 1;
         }
+    }
+
+    /* Subcommands that need no connection (and thus no host/token). */
+    if (optind < argc && !strcmp(argv[optind], "discover")) {
+        extern int do_discover(int wait_ms);
+        return do_discover(2000);
     }
 
     profile_t prof = {0};

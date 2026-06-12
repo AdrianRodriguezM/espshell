@@ -145,6 +145,18 @@ chmod 600 ~/.config/esp-ctl/devices.toml
 ./esp-ctl --device default shell
 ```
 
+### Find devices without a fixed IP
+
+The firmware advertises `_espshell._tcp` over mDNS (Kconfig:
+`ESPSHELL_ENABLE_MDNS`, hostname from `device_name`). One shot:
+
+```sh
+./esp-ctl discover     # prints a ready-to-paste devices.toml section
+```
+
+`host = "name.local"` also works in profiles if your system resolves mDNS
+names (nss-mdns); `discover` itself has no such dependency.
+
 ## License
 
 Licensed under **GNU GPL v3.0 or later** (`GPL-3.0-or-later`, SPDX).

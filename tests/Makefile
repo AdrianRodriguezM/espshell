@@ -15,19 +15,24 @@ CORE_SRC = ../components/core/src/cmd.c
 CLI_SRC  = ../tools/esp-ctl/src/proto.c \
            ../tools/esp-ctl/src/crypto.c
 
-BINS = test_tokenizer test_proto
+BINS = test_tokenizer test_proto test_discover
 
 all: $(BINS)
 	@echo ""
 	./test_tokenizer
 	@echo ""
 	./test_proto
+	@echo ""
+	./test_discover
 
 test_tokenizer: test_tokenizer.c $(CORE_SRC)
 	$(CC) $(CFLAGS_TOK) $^ -o $@
 
 test_proto: test_proto.c $(CLI_SRC)
 	$(CC) $(CFLAGS_PRT) $^ -o $@ $(LDLIBS)
+
+test_discover: test_discover.c ../tools/esp-ctl/src/discover.c
+	$(CC) $(BASE) -o $@ $<
 
 clean:
 	$(RM) $(BINS)
