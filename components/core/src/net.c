@@ -125,14 +125,14 @@ static void wifi_start_softap(void)
            "╔══════════════════════════════════════════════════════╗\n"
            "║          espshell — provisioning mode                ║\n"
            "╠══════════════════════════════════════════════════════╣\n"
-           "║  1. Connect to WiFi:  %-30s  ║\n"
+           "║  1. Connect to WiFi:  %-29.29s  ║\n"
            "║     (open network — no WiFi password)                ║\n"
            "║  2. Run:  esp-ctl --host 192.168.4.1 shell           ║\n"
            "║  3. Run:  WIFI_SET <your-ssid> <your-pass>           ║\n"
            "║  4. Run:  REBOOT  — device restarts in STA mode      ║\n"
            "║                                                      ║\n"
-           "║  Auth token: see first-boot log above (*** token ***) ║\n"
-           "║  If lost: erase NVS (0x9000 len 0x6000) to reset    ║\n"
+           "║  Auth token: see first-boot log (*** token ***)      ║\n"
+           "║  If lost: erase NVS (0x9000 len 0x6000) to reset     ║\n"
            "╚══════════════════════════════════════════════════════╝\n"
            "\n", ap_ssid);
 }
