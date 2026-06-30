@@ -128,7 +128,6 @@ from `git clone` to running your own custom command over OTA.
 git clone https://github.com/AdrianRodriguezM/espshell && cd espshell
 . $HOME/esp/esp-idf/export.sh  # activate ESP-IDF environment (once per shell session)
 idf.py set-target esp32        # or esp32s3 / esp32c3 / esp32c6
-idf.py menuconfig              # espshell core → set WiFi creds + token (or leave blank to auto-generate)
 idf.py build flash monitor
 ```
 
@@ -150,8 +149,37 @@ idf.py fullclean
 idf.py build
 ```
 
-On the very first boot the device prints a random hex token over UART unless
-you set one in menuconfig or via `CFG_SET auth_token <hex>`.
+### First-boot provisioning (no UART required after flash)
+
+On first boot without WiFi credentials, the device starts a temporary open AP:
+
+```
+*** espshell first-boot token ***
+    <64-hex-chars>                    ← copy this
+
+╔═══════════════════════════════════════╗
+║     espshell — provisioning mode     ║
+║  1. Connect to WiFi: espshell-XXYY   ║
+║  2. esp-ctl --host 192.168.4.1 shell ║
+║  3. WIFI_SET <ssid> <pass>           ║
+║  4. REBOOT                           ║
+╚═══════════════════════════════════════╝
+```
+
+The full encrypted shell runs on `192.168.4.1:9000` — same protocol, same
+token auth. After `REBOOT` the device comes up in STA mode and announces
+itself via mDNS (`esp-ctl discover`). No UART cable needed again.
+
+To skip provisioning mode, set the WiFi SSID/password via `idf.py menuconfig`
+before flashing (`espshell core → Default WiFi SSID/Password`).
+
+On the very first boot the device prints a random hex token over UART. Copy
+it — it is only printed once. If lost, erase the NVS partition to regenerate:
+
+```sh
+python3 -m esptool --chip esp32 -p /dev/ttyUSB0 -b 115200 \
+    erase-region 0x9000 0x6000
+```
 
 ## Build the CLI
 

@@ -61,6 +61,18 @@ menu "espshell core"
             If empty, a 32-byte random token is generated and stored in NVS on
             first boot. Read it back over UART logs or via factory provisioning.
 
+    config ESPSHELL_ENABLE_SOFTAP
+        bool "Enable SoftAP provisioning mode"
+        default y
+        help
+            When no wifi_ssid is configured in NVS or menuconfig, bring up a
+            temporary open WiFi AP (SSID: espshell-XXYY) instead of refusing
+            to start. The full encrypted shell runs on 192.168.4.1 at the
+            configured TCP port, so the device can be provisioned without a
+            UART cable. Run WIFI_SET + REBOOT over the shell to transition to
+            STA mode. The protocol auth token is still required; the open AP
+            is not a security bypass. Costs ~1 KB of flash.
+
     config ESPSHELL_ENABLE_MEM_CMDS
         bool "Enable MEM_READ / MEM_WRITE commands (DANGEROUS)"
         default n

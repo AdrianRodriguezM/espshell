@@ -22,6 +22,7 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_netif.h"
+#include "esp_mac.h"
 
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
@@ -53,6 +54,7 @@
 static EventGroupHandle_t s_wifi_evts;
 static esp_netif_t       *s_netif;
 static volatile bool      s_online;
+static volatile bool      s_ap_mode;
 static net_status_t       s_status;
 
 /* === single-client connection state ====================================== */
@@ -82,8 +84,59 @@ static void on_wifi_evt(void *arg, esp_event_base_t base, int32_t id, void *data
         s_online = true;
         xEventGroupSetBits(s_wifi_evts, WIFI_CONNECTED_BIT);
         LOG_I(TAG, "got ip " IPSTR, IP2STR(&e->ip_info.ip));
+    } else if (base == WIFI_EVENT && id == WIFI_EVENT_AP_START) {
+        s_ap_mode = true;
+        s_online  = true;
+        xEventGroupSetBits(s_wifi_evts, WIFI_CONNECTED_BIT);
+        LOG_I(TAG, "softap ready — shell on 192.168.4.1:%d", CONFIG_ESPSHELL_TCP_PORT);
     }
 }
+
+#ifdef CONFIG_ESPSHELL_ENABLE_SOFTAP
+static void wifi_start_softap(void)
+{
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);
+    char ap_ssid[33];
+    snprintf(ap_ssid, sizeof(ap_ssid), "espshell-%02X%02X", mac[4], mac[5]);
+
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    s_netif = esp_netif_create_default_wifi_ap();
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_AP_START,
+                                                        on_wifi_evt, NULL, NULL));
+
+    wifi_config_t wc = {0};
+    strncpy((char *)wc.ap.ssid, ap_ssid, sizeof(wc.ap.ssid) - 1);
+    wc.ap.ssid_len      = (uint8_t)strlen(ap_ssid);
+    wc.ap.channel       = 6;
+    wc.ap.authmode      = WIFI_AUTH_OPEN;  /* token auth is in the protocol */
+    wc.ap.max_connection = 4;
+
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wc));
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    printf("\n"
+           "╔══════════════════════════════════════════════════════╗\n"
+           "║          espshell — provisioning mode                ║\n"
+           "╠══════════════════════════════════════════════════════╣\n"
+           "║  1. Connect to WiFi:  %-30s  ║\n"
+           "║     (open network — no WiFi password)                ║\n"
+           "║  2. Run:  esp-ctl --host 192.168.4.1 shell           ║\n"
+           "║  3. Run:  WIFI_SET <your-ssid> <your-pass>           ║\n"
+           "║  4. Run:  REBOOT  — device restarts in STA mode      ║\n"
+           "║                                                      ║\n"
+           "║  Auth token: see first-boot log above (*** token ***) ║\n"
+           "║  If lost: erase NVS (0x9000 len 0x6000) to reset    ║\n"
+           "╚══════════════════════════════════════════════════════╝\n"
+           "\n", ap_ssid);
+}
+#endif /* CONFIG_ESPSHELL_ENABLE_SOFTAP */
 
 static void wifi_start(void)
 {
@@ -100,7 +153,11 @@ static void wifi_start(void)
 #endif
 
     if (ssid[0] == '\0') {
+#ifdef CONFIG_ESPSHELL_ENABLE_SOFTAP
+        wifi_start_softap();
+#else
         LOG_W(TAG, "no wifi_ssid configured; set via CFG_SET or menuconfig");
+#endif
         return;
     }
 
@@ -130,7 +187,8 @@ static void wifi_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 }
 
-bool net_is_online(void) { return s_online; }
+bool net_is_online(void)      { return s_online;  }
+bool net_is_softap_mode(void) { return s_ap_mode; }
 
 bool net_get_status(net_status_t *out)
 {
@@ -147,6 +205,7 @@ bool net_get_status(net_status_t *out)
 
 void net_reconnect(void)
 {
+    if (s_ap_mode) return;  /* no STA connection in provisioning mode */
     esp_wifi_disconnect();
     esp_wifi_connect();
 }

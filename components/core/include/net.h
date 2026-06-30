@@ -25,8 +25,11 @@ typedef struct {
 } net_status_t;
 bool net_get_status(net_status_t *out);
 
-/* Force a reconnect to the configured AP. */
+/* Force a reconnect to the configured AP. No-op in SoftAP provisioning mode. */
 void net_reconnect(void);
+
+/* True when running in SoftAP provisioning mode (no STA credentials configured). */
+bool net_is_softap_mode(void);
 
 /**
  * net_send_event — emit an asynchronous EVT line to the currently-connected

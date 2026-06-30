@@ -29,20 +29,23 @@ Two protocol fixes that had to land before anything else:
   records, so `devices.toml` no longer needs a fixed IP. `esp-ctl discover`
   does a one-shot multicast query and prints a ready-to-paste profile.
 
+## Done (v0.3.0)
+
+- **SoftAP first-boot provisioning.** When no `wifi_ssid` is configured in
+  NVS or menuconfig, the device brings up an open WiFi AP
+  (`espshell-XXYY`, where `XXYY` are the last two bytes of the SoftAP MAC)
+  instead of refusing to start. The full encrypted shell runs on
+  `192.168.4.1` at the configured TCP port — same protocol, same token auth,
+  zero new attack surface. Connect to the AP, run `WIFI_SET <ssid> <pass>`
+  then `REBOOT`; the device restarts in STA mode and announces itself via
+  mDNS. Pairs with the existing mDNS flow to deliver the "flash it and find
+  it" promise with no UART cable after the initial flash.
+  Flash cost: ~384 bytes. No protocol bump. Kconfig-gated
+  (`ESPSHELL_ENABLE_SOFTAP`, default y).
+
 ---
 
 ## Near-term
-
-### SoftAP first-boot provisioning
-
-Get rid of the UART-only first-boot flow. If `wifi_ssid` is missing in NVS,
-start a SoftAP (`espshell-<mac4>`), run the same TCP shell on 192.168.4.1,
-accept `WIFI_SET`, then reboot into STA. Reuses the whole server/auth/protocol
-stack; the new code is the AP-mode branch in `wifi_start()` and a `provisioned`
-check. Pairs well with mDNS: after the reboot the device announces itself, so
-the user doesn't have to hunt for its DHCP address. The WiFi init in `net.c`
-assumes STA throughout, so `wifi_start()` needs a refactor first.
-Flash ~0, no proto bump.
 
 ### Binary bulk frames (`type=2`)
 
@@ -150,8 +153,8 @@ The partition story needs deciding before any code gets written. Large.
 ```
 done            0.1.1 (framing + handshake fixes)
 done            0.2.0 (mDNS discovery)
-next            SoftAP provisioning  → "flash it and find it"
-                bulk frames + forward secrecy (one espshell/2 bump)
+done            0.3.0 (SoftAP first-boot provisioning)
+next            bulk frames + forward secrecy (one espshell/2 bump)
 later           EVT subscriptions, shell improvements, fleet ops
                 FS streaming (once type=2 exists)
 someday         BLE / the exploratory stuff, by whim

@@ -10,6 +10,8 @@
 #include <string.h>
 
 #include "esp_wifi.h"
+#include "esp_system.h"
+#include "esp_timer.h"
 
 static bool c_scan(int c, char **v, char *r, size_t s)
 {
@@ -36,12 +38,24 @@ static bool c_scan(int c, char **v, char *r, size_t s)
     return true;
 }
 
+static void reboot_cb(void *arg) { (void)arg; esp_restart(); }
+
 static bool c_set(int c, char **v, char *r, size_t s)
 {
     if (c != 2) { cmd_set_err(ESPSHELL_E_BAD_ARGS); snprintf(r, s, "ssid pass"); return false; }
     if (strlen(v[0]) >= 33 || strlen(v[1]) >= 65) { cmd_set_err(ESPSHELL_E_BAD_ARGS); return false; }
     if (!cfg_set_str("wifi_ssid", v[0]) || !cfg_set_str("wifi_pass", v[1])) {
         cmd_set_err(ESPSHELL_E_INTERNAL); return false;
+    }
+    if (net_is_softap_mode()) {
+        /* In provisioning mode we can't reconnect (no STA interface exists).
+         * Schedule a reboot so the response frame is sent before we restart. */
+        snprintf(r, s, "saved; rebooting into STA mode in 1s");
+        esp_timer_handle_t t;
+        esp_timer_create_args_t ta = { .callback = reboot_cb, .name = "prov_reboot" };
+        if (esp_timer_create(&ta, &t) == ESP_OK)
+            esp_timer_start_once(t, 1000000);
+        return true;
     }
     snprintf(r, s, "saved; reconnecting");
     net_reconnect();
