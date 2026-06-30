@@ -19,13 +19,13 @@ CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS=y
 
 # ---- LWIP ----
 CONFIG_LWIP_SO_RCVBUF=y
-CONFIG_LWIP_TCP_KEEPALIVE=y
+# Note: LWIP_TCP_KEEPALIVE is hardcoded to 1 in lwipopts.h (IDF 6.x) — no Kconfig symbol.
 
 # ---- mbedTLS (we use HMAC-SHA256, HKDF, ChaCha20-Poly1305) ----
 CONFIG_MBEDTLS_CHACHA20_C=y
-CONFIG_MBEDTLS_POLY1305_C=y
+# MBEDTLS_POLY1305_C is included in CHACHAPOLY_C — no separate Kconfig symbol in IDF 6.x.
 CONFIG_MBEDTLS_CHACHAPOLY_C=y
-CONFIG_MBEDTLS_HKDF_C=y
+# MBEDTLS_HKDF_C has no Kconfig symbol in IDF 6.x; HKDF is always available via mbedTLS PSA.
 
 # ---- NVS encryption (recommended for production, opt-in) ----
 # CONFIG_NVS_ENCRYPTION=y  # enable together with secure-boot/flash-enc

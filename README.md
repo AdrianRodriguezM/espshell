@@ -126,9 +126,28 @@ from `git clone` to running your own custom command over OTA.
 
 ```sh
 git clone https://github.com/AdrianRodriguezM/espshell && cd espshell
+. $HOME/esp/esp-idf/export.sh  # activate ESP-IDF environment (once per shell session)
 idf.py set-target esp32        # or esp32s3 / esp32c3 / esp32c6
 idf.py menuconfig              # espshell core → set WiFi creds + token (or leave blank to auto-generate)
 idf.py build flash monitor
+```
+
+If you use the `get_idf` alias (recommended by Espressif), run `get_idf` instead
+of sourcing `export.sh` directly — both activate the same environment.
+
+**Port selection:** pass `-p <port>` explicitly if the device is not on
+`/dev/ttyUSB0`. On Linux, USB-serial adapters usually appear as
+`/dev/ttyUSB0` (CP210x/CH340) or `/dev/ttyACM0` (CDC-ACM). Run
+`ls /dev/ttyUSB* /dev/ttyACM*` to find the right port. If you get
+"permission denied", add yourself to the `dialout` group:
+`sudo usermod -aG dialout $USER` (requires re-login).
+
+**Stale build directory:** if you move or rename the project folder, the cached
+`build/` directory will refuse to build with a path mismatch. Fix with:
+
+```sh
+idf.py fullclean
+idf.py build
 ```
 
 On the very first boot the device prints a random hex token over UART unless
