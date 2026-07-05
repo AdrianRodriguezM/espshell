@@ -67,7 +67,7 @@ static bool c_mode(int c, char **v, char *r, size_t s)
     if (!parse_pin(v[0], &pin)) { cmd_set_err(ESPSHELL_E_BAD_ARGS); snprintf(r, s, "bad pin"); return false; }
 
     gpio_config_t g = { .pin_bit_mask = 1ULL << pin, .intr_type = GPIO_INTR_DISABLE };
-    if      (!strcasecmp(v[1], "OUTPUT"))         { g.mode = GPIO_MODE_OUTPUT; }
+    if      (!strcasecmp(v[1], "OUTPUT"))         { g.mode = GPIO_MODE_INPUT_OUTPUT; }
     else if (!strcasecmp(v[1], "INPUT"))          { g.mode = GPIO_MODE_INPUT; }
     else if (!strcasecmp(v[1], "INPUT_PULLUP"))   { g.mode = GPIO_MODE_INPUT; g.pull_up_en = 1; }
     else if (!strcasecmp(v[1], "INPUT_PULLDOWN")) { g.mode = GPIO_MODE_INPUT; g.pull_down_en = 1; }
