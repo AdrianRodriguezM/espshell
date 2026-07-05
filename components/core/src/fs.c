@@ -63,7 +63,9 @@ static bool c_list(int c, char **v, char *r, size_t s)
     while ((de = readdir(d)) && w < (int)s - 64) {
         struct stat st;
         char fp[320];
-        snprintf(fp, sizeof(fp), "%s/%s", full, de->d_name);
+        size_t fl = strlen(full);
+        const char *sep = (fl && full[fl - 1] == '/') ? "" : "/";
+        snprintf(fp, sizeof(fp), "%s%s%s", full, sep, de->d_name);
         size_t sz = stat(fp, &st) == 0 ? (size_t)st.st_size : 0;
         w += snprintf(r + w, s - w, "%s%s:%u", w ? " " : "", de->d_name, (unsigned)sz);
     }
