@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -253,6 +254,59 @@ static int do_connect(const char *host, int port)
     return fd;
 }
 
+/* ---------- log-stream presentation ----------
+ * Async EVT frames (the log/event stream) are decorated with a local
+ * timestamp and, for `EVT LOG` lines, a per-level colour and aligned columns.
+ * This is presentation only: it kicks in solely on an interactive terminal.
+ * When stdout is a pipe/file, frames pass through verbatim so the wire format
+ * stays script-parseable. Colour additionally honours NO_COLOR. */
+static bool g_tty;      /* stdout is an interactive terminal */
+static bool g_color;    /* g_tty and NO_COLOR unset          */
+
+static void presentation_init(void)
+{
+    g_tty   = isatty(STDOUT_FILENO);
+    g_color = g_tty && getenv("NO_COLOR") == NULL;
+}
+
+static const char *level_color(const char *lvl)
+{
+    if (!strcmp(lvl, "ERR"))     return "\033[31m";  /* red    */
+    if (!strcmp(lvl, "WARN"))    return "\033[33m";  /* yellow */
+    if (!strcmp(lvl, "DEBUG"))   return "\033[2m";   /* dim    */
+    if (!strcmp(lvl, "VERBOSE")) return "\033[2m";   /* dim    */
+    return "";                                       /* INFO: default */
+}
+
+/* Print one async EVT line. Raw passthrough unless stdout is a terminal. */
+static void emit_evt(const char *line)
+{
+    if (!g_tty) { puts(line); fflush(stdout); return; }
+
+    char ts[16];
+    time_t now = time(NULL);
+    struct tm tmv;
+    localtime_r(&now, &tmv);
+    strftime(ts, sizeof(ts), "%H:%M:%S", &tmv);
+
+    const char *dim = g_color ? "\033[2m" : "";
+    const char *rst = g_color ? "\033[0m" : "";
+
+    /* Decompose "EVT LOG <LEVEL> <tag> <msg...>" for column alignment. */
+    char lvl[16], tag[32];
+    int msg_off = 0;
+    if (sscanf(line, "EVT LOG %15s %31s %n", lvl, tag, &msg_off) == 2 && msg_off > 0) {
+        const char *lc  = g_color ? level_color(lvl) : "";
+        const char *tgc = g_color ? "\033[36m" : "";   /* cyan tag */
+        printf("%s%s%s %s%-7s%s %s%-12s%s %s\n",
+               dim, ts, rst, lc, lvl, rst, tgc, tag, rst, line + msg_off);
+    } else {
+        /* HEALTH / GPIO / ADC / PROJECT / malformed: timestamp + verbatim. */
+        printf("%s%s%s %s\n", dim, ts, rst, line);
+    }
+    fflush(stdout);
+}
+
 /* ---------- subcommands ---------- */
 static int print_reply(const char *reply)
 {
@@ -263,7 +317,7 @@ static int print_reply(const char *reply)
         return 0;
     }
     if (!strncmp(reply, "ERR ", 4)) { fprintf(stderr, "%s\n", reply); return 4; }
-    if (!strncmp(reply, "EVT ", 4)) { puts(reply); return 0; }
+    if (!strncmp(reply, "EVT ", 4)) { emit_evt(reply); return 0; }
     puts(reply);
     return 0;
 }
@@ -276,8 +330,7 @@ static int recv_cmd_reply(int fd, session_t *s, char *out, size_t out_cap)
         int n = recv_reply(fd, s, out, out_cap);
         if (n < 0) return n;
         if (!strncmp(out, "EVT ", 4)) {
-            puts(out);
-            fflush(stdout);
+            emit_evt(out);
             continue;
         }
         return n;
@@ -308,8 +361,7 @@ static int do_logs(int fd, session_t *s)
     while (!g_stop) {
         int n = recv_reply(fd, s, line, sizeof(line));
         if (n < 0) return 3;
-        puts(line);
-        fflush(stdout);
+        emit_evt(line);
     }
     return 0;
 }
@@ -428,6 +480,8 @@ int main(int argc, char **argv)
     const char *token_file = NULL;
     const char *device = NULL;
     int port = 9000;
+
+    presentation_init();
 
     static struct option opts[] = {
         {"host",       required_argument, 0, 'H'},
