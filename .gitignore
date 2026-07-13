@@ -40,3 +40,4 @@ tmp/
 tests/test_tokenizer
 tests/test_proto
 tests/test_discover
+tests/test_profile
