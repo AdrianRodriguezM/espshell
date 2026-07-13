@@ -19,7 +19,7 @@ TCP shell-style command protocol. Each downstream project builds on top of the
 core and only adds its own command handlers.
 
 > **Status:** Phases 1–4 implemented (WiFi, TCP, auth, AEAD, OTA, peripherals,
-> filesystem, power). Phase 5 (TLS / forward secrecy) is not yet implemented —
+> filesystem, power). Phase 5 (forward secrecy, Noise-PSK) is not yet implemented —
 > use on a trusted LAN or VPN.
 
 ## Supported targets
