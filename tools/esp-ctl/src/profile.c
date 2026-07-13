@@ -50,7 +50,7 @@ static char *unquote(char *s)
     while (*s == ' ' || *s == '\t') s++;
     if (*s == '"') {
         s++;
-        char *e = strrchr(s, '"');
+        char *e = strchr(s, '"');   /* closing quote; ignore any trailing comment */
         if (e) *e = '\0';
     }
     return strdup(s);
