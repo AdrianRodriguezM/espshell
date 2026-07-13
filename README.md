@@ -2,6 +2,17 @@
 
 [![CI](https://github.com/AdrianRodriguezM/espshell/actions/workflows/build.yml/badge.svg)](https://github.com/AdrianRodriguezM/espshell/actions/workflows/build.yml)
 
+<p align="center">
+  <img src="docs/media/ota-demo.gif" alt="espshell — live over-the-air firmware update" width="820">
+</p>
+
+<p align="center">
+  <em>Demo of an over-the-air update. The web page is only a visual cue to make the swap
+  visible — <code>esp-ctl ota upload</code> streams a new firmware over the encrypted
+  link and the device reboots into it in place, no cable, core untouched.</em>
+</p>
+
+
 A reusable application-layer firmware on top of ESP-IDF that exposes the full
 capability surface of any ESP32-family chip to a Linux host over an encrypted
 TCP shell-style command protocol. Each downstream project builds on top of the
